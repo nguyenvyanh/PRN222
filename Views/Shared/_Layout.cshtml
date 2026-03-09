@@ -27,6 +27,17 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav align-items-sm-center">
+                        <li class="nav-item">
+                            <span id="authUserName" class="navbar-text text-dark me-sm-3"></span>
+                        </li>
+                        <li class="nav-item" id="loginNavItem">
+                            <a href="#" class="nav-link text-dark">Login</a>
+                        </li>
+                        <li class="nav-item d-none" id="logoutNavItem">
+                            <button id="logoutBtn" type="button" class="btn btn-link nav-link text-dark">Logout</button>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
