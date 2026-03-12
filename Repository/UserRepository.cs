@@ -17,6 +17,17 @@ public sealed class UserRepository(CloneEbayDbContext dbContext) : IUserReposito
             u => u.username == username && u.password == password,
             cancellationToken);
 
+    public async Task<bool> UpdateLastLoginAsync(int userId, string? ipAddress, DateTime loginAtUtc, CancellationToken cancellationToken = default)
+    {
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.id == userId, cancellationToken);
+        if (user is null) return false;
+
+        user.lastLoginTimestamp = loginAtUtc;
+        user.lastLoginIP = ipAddress;
+
+        return await dbContext.SaveChangesAsync(cancellationToken) > 0;
+    }
+
     public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         => dbContext.Users.FirstOrDefaultAsync(u => u.email == email, cancellationToken);
 
@@ -141,5 +152,10 @@ public sealed class UserRepository(CloneEbayDbContext dbContext) : IUserReposito
         u.lockedReason = null;
 
         return await dbContext.SaveChangesAsync(cancellationToken) > 0;
+    }
+
+    public Task<List<User>> GetPendingApprovalAsync(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

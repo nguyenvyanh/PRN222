@@ -14,6 +14,7 @@ public interface IUserRepository
 
     Task<User?> GetByCredentialsAsync(string username, string password, CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateLastLoginAsync(int userId, string? ipAddress, DateTime loginAtUtc, CancellationToken cancellationToken = default);
     Task<bool> CreateUserAsync(User user, CancellationToken cancellationToken = default);
 
     Task<bool> UpdateUserAsync(User user, CancellationToken cancellationToken = default);
@@ -27,12 +28,14 @@ public interface IUserRepository
     Task<List<User>> GetUsersByLastLoginIpAsync(string ipAddress, CancellationToken cancellationToken = default);
 
     Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(
-        string? keyword,
-        bool? isApproved,
-        bool? isLocked,
-        int page,
-        int pageSize,
-        CancellationToken cancellationToken = default);
+      string? keyword,
+      bool? isApproved,
+      bool? isLocked,
+      int page,
+      int pageSize,
+      CancellationToken cancellationToken = default);
+
+    Task<List<User>> GetPendingApprovalAsync(CancellationToken cancellationToken = default);
 
     Task<bool> ApproveAsync(int id, CancellationToken cancellationToken = default);
 
