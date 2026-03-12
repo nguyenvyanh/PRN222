@@ -27,12 +27,49 @@ namespace Project_Group3.Controllers
             => _userRepository.GetUsersAsync(cancellationToken);
 
         public sealed record LoginRequest(string Username, string Password);
+        public sealed record LoginResponse(int Id, string? Username, string? Email, string? Role);
+        public sealed record LogoutRequest(int UserId);
 
         [HttpPost("login")]
-        public async Task<ActionResult<User>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetByCredentialsAsync(request.Username, request.Password, cancellationToken);
-            return user is null ? Unauthorized() : Ok(user);
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest("Username và password là bắt buộc.");
+            }
+
+            var user = await _userRepository.GetByCredentialsAsync(request.Username.Trim(), request.Password, cancellationToken);
+            if (user is null)
+            {
+                return Unauthorized("Sai tài khoản hoặc mật khẩu.");
+            }
+
+            if (user.isLocked)
+            {
+                return Unauthorized("Tài khoản đang bị khóa.");
+            }
+
+            if (!user.isApproved)
+            {
+                return Unauthorized("Tài khoản chưa được duyệt.");
+            }
+
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _userRepository.UpdateLastLoginAsync(user.id, ip, DateTime.UtcNow, cancellationToken);
+
+            return Ok(new LoginResponse(user.id, user.username, user.email, user.role));
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
+        {
+            var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            return Ok(new { message = "Đăng xuất thành công." });
         }
 
         [HttpGet("by-email")]
